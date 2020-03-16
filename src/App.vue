@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <router-link to="/">我是标签</router-link>
+    <router-view></router-view>
   </div>
 </template>
 
