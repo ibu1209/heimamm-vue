@@ -42,7 +42,18 @@
           <el-button type="primary" @click="submitForm" class="loginBtn">登录</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="loginBtn">注册</el-button>
+          <el-button type="primary" class="loginBtn" @click="dialogFormVisible = true">注册</el-button>
+          <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
+            <el-form :model="form">
+              <el-form-item label="活动名称" :label-width="formLabelWidth">
+                <el-input v-model="form.name" autocomplete="off"></el-input>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+            </div>
+          </el-dialog>
         </el-form-item>
       </el-form>
     </div>
@@ -60,6 +71,8 @@ export default {
         yzm: "",
         check: []
       },
+      dialogFormVisible: false,
+      formLabelWidth: "120px",
       rules: {
         name: [
           { required: true, message: "请输入手机号", trigger: "blur" },
