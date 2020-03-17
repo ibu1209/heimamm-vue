@@ -1,20 +1,50 @@
 <template>
   <div class="login">
     <div class="leftBox">
+      <!--title区域-->
       <div class="title">
         <img class="left_topImg" src="../../assets/矢量智能对象 拷贝 9.png" alt />
         <span class="title_name">黑马面面</span>
         <span class="title_line"></span>
         <span class="title_login">用户登录</span>
       </div>
-      <div>
-        <el-input placeholder="请输入手机号" prefix-icon="el-icon-search" v-model="input1"></el-input>
-        <el-input placeholder="请输入密码" prefix-icon="el-icon-lock" v-model="input2" show-password></el-input>
-        <div>
-          <el-input placeholder="请输验证码" prefix-icon="el-icon-key" v-model="input3"></el-input>
-          <span></span>
-        </div>
-      </div>
+      <!--表单区域-->
+      <el-form class="loginFrom" :rules="rules" ref="form" :model="form" label-width="0">
+        <el-form-item prop="name">
+          <el-input placeholder="请输入手机号" prefix-icon="el-icon-user" v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            placeholder="请输入密码"
+            prefix-icon="el-icon-lock"
+            v-model="form.password"
+            show-password
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="yzm">
+          <el-row>
+            <el-col :span="17">
+              <el-input placeholder="请输验证码" prefix-icon="el-icon-key" v-model="form.yzm"></el-input>
+            </el-col>
+            <el-col :span="7">
+              <img class="loginCode" src="../../assets/login_banner_ele.png" alt />
+            </el-col>
+          </el-row>
+        </el-form-item>
+        <el-form-item prop="check">
+          <el-checkbox v-model="form.check">
+            我已阅读并同意
+            <el-link type="primary" href="#" target="_blank">用户协议</el-link>和
+            <el-link type="primary" href="#" target="_blank">隐私条款</el-link>
+          </el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitForm" class="loginBtn">登录</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" class="loginBtn">注册</el-button>
+        </el-form-item>
+      </el-form>
     </div>
     <img class="rightImg" src="../../assets/login_banner_ele.png" alt />
   </div>
@@ -24,10 +54,50 @@
 export default {
   data() {
     return {
-      input1: "",
-      input2: "",
-      input3: ""
+      form: {
+        name: "",
+        password: "",
+        yzm: "",
+        check: []
+      },
+      rules: {
+        name: [
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          { min: 11, max: 11, message: "长度应为11位数字", trigger: "blur" }
+        ],
+        password: [
+          { required: true, message: "请输入密码", trigger: "blur" },
+          { min: 6, max: 14, message: "密码不低于6位数字", trigger: "blur" }
+        ],
+        yzm: [
+          { required: true, message: "请输入验证码", trigger: "blur" },
+          { min: 4, max: 4, message: "请输入正确验证码", trigger: "blur" }
+        ],
+        check: [
+          {
+            type: "array",
+            required: true,
+            message: "请先阅读用户相关条款",
+            trigger: "change"
+          }
+        ]
+      }
     };
+  },
+  methods: {
+    submitForm() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.$message({
+            showClose: true,
+            message: "登录成功",
+            type: "success"
+          });
+        } else {
+          this.$message.error("登录失败");
+        }
+      });
+    }
   }
 };
 </script>
@@ -78,6 +148,23 @@ export default {
         font-family: SourceHanSansCN;
         font-weight: 400;
         color: rgba(12, 12, 12, 1);
+      }
+    }
+
+    .loginFrom {
+      margin-top: 29px;
+
+      .loginCode {
+        width: 100%;
+        height: 40px;
+      }
+
+      /deep/ .el-form-item__content {
+        line-height: 20px;
+      }
+
+      .loginBtn {
+        width: 100%;
       }
     }
   }
