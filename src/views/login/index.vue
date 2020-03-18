@@ -9,7 +9,7 @@
         <span class="title_login">用户登录</span>
       </div>
       <!--表单区域-->
-      <el-form class="loginFrom" :rules="rules" ref="form" :model="form" label-width="0">
+      <el-form class="loginFrom" :rules="rules" ref="loginForm" :model="form" label-width="0">
         <el-form-item prop="name">
           <el-input placeholder="请输入手机号" prefix-icon="el-icon-user" v-model="form.name"></el-input>
         </el-form-item>
@@ -42,26 +42,18 @@
           <el-button type="primary" @click="submitForm" class="loginBtn">登录</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" class="loginBtn" @click="dialogFormVisible = true">注册</el-button>
-          <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
-            <el-form :model="form">
-              <el-form-item label="活动名称" :label-width="formLabelWidth">
-                <el-input v-model="form.name" autocomplete="off"></el-input>
-              </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button @click="dialogFormVisible = false">取 消</el-button>
-              <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-            </div>
-          </el-dialog>
+          <el-button type="primary" class="loginBtn" @click="openRegister">注册</el-button>
         </el-form-item>
       </el-form>
     </div>
     <img class="rightImg" src="../../assets/login_banner_ele.png" alt />
+    <register ref="register"></register>
   </div>
 </template>
 
 <script>
+//导入注册组件
+import register from "../login/components/register";
 export default {
   data() {
     return {
@@ -71,11 +63,14 @@ export default {
         yzm: "",
         check: []
       },
-      dialogFormVisible: false,
-      formLabelWidth: "120px",
       rules: {
         name: [
-          { required: true, message: "请输入手机号", trigger: "blur" },
+          {
+            type: "number",
+            required: true,
+            message: "请输入手机号",
+            trigger: "blur"
+          },
           { min: 11, max: 11, message: "长度应为11位数字", trigger: "blur" }
         ],
         password: [
@@ -98,8 +93,9 @@ export default {
     };
   },
   methods: {
+    //点击登录按钮
     submitForm() {
-      this.$refs.form.validate(valid => {
+      this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.$message({
             showClose: true,
@@ -110,7 +106,14 @@ export default {
           this.$message.error("登录失败");
         }
       });
+    },
+    //点击注册按钮
+    openRegister() {
+      this.$refs.register.dialogFormVisible = true;
     }
+  },
+  components: {
+    register
   }
 };
 </script>
