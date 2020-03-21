@@ -1,10 +1,16 @@
 <template>
-  <el-dialog class="reg_dialog" title="用户注册" :visible.sync="dialogFormVisible">
+  <el-dialog
+    :close-on-click-modal="false"
+    class="reg_dialog"
+    title="用户注册"
+    :visible.sync="dialogFormVisible"
+  >
     <el-form :model="form" :rules="rules" ref="registerForm">
       <el-form-item prop="imgUpdata" label="头像" :label-width="formLabelWidth" class="imgUpdata">
         <el-upload
           class="avatar-uploader"
-          action="https://jsonplaceholder.typicode.com/posts/"
+          :action="imageUpload"
+          name="image"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeAvatarUpload"
@@ -28,63 +34,63 @@
       <el-form-item prop="imgCode" label="图形码" :label-width="formLabelWidth">
         <el-row>
           <el-col :span="17">
-            <el-input placeholder="请输图形码" v-model="form.imgCode"></el-input>
+            <el-input placeholder="请输入图形码" v-model="form.imgCode"></el-input>
           </el-col>
           <el-col class="codeRight" :span="7">
-            <img class="zcCode" src="../../../assets/login_banner_ele.png" alt />
+            <img @dblclick="newUrl" class="zcCode" :src="imgCodeUrl" alt />
           </el-col>
         </el-row>
       </el-form-item>
       <el-form-item prop="yzm" label="验证码" :label-width="formLabelWidth">
         <el-row>
           <el-col :span="17">
-            <el-input placeholder="请输验证码" v-model="form.yzm"></el-input>
+            <el-input placeholder="请输入验证码" v-model="form.yzm"></el-input>
           </el-col>
           <el-col class="codeRight" :span="7">
-            <button class="zcCode">获取用户验证码</button>
+            <button
+              :disabled="time!==0"
+              @click="getCode"
+              class="zcCode"
+            >{{time===0?'获取手机验证码':time+'s'}}</button>
           </el-col>
         </el-row>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="dialogFormVisible = false">取 消</el-button>
+      <el-button @click="cancle">取 消</el-button>
       <el-button type="primary" @click="submitData">确 定</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
+//导入api方法
+import { apiGetCode, apiRegister } from "@/api/register";
+import { validatePhone, validateEmail } from "@/utils/mycheck";
+
 export default {
   data() {
-    var validatePhone = (rule, value, callback) => {
-      var reg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
-      if (reg.test(value)) {
-        callback();
-      } else {
-        callback(new Error("手机号码格式不正确"));
-      }
-    };
-
-    var validateEmail = (rule, value, callback) => {
-      var reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
-      if (reg.test(value)) {
-        callback();
-      } else {
-        callback(new Error("邮箱填写不正确"));
-      }
-    };
-
     return {
       formLabelWidth: "67px",
       dialogFormVisible: false,
       imageUrl: "",
+      imageUpload: process.env.VUE_APP_URL + "/uploads",
+      timer: null,
+      time: 0,
+      imgCodeUrl:
+        process.env.VUE_APP_URL + "/captcha?type=sendsms&t" + Date.now(),
+      // imgCodeUrl:
+      //   "http://127.0.0.1/heimamm/public" +
+      //   "/captcha?type=sendsms&t=" +
+      //   Math.random(),
       form: {
         name: "",
         email: "",
         phone: "",
         password: "",
         imgCode: "",
-        yzm: ""
+        yzm: "",
+        imgUpdata: ""
       },
 
       rules: {
@@ -113,14 +119,36 @@ export default {
     };
   },
   methods: {
+    cancle() {
+      this.$refs.registerForm.resetFields();
+      this.imageUrl = "";
+      this.dialogFormVisible = false;
+    },
     submitData() {
       this.$refs.registerForm.validate(valid => {
         if (valid) {
-          this.$message({
-            showClose: true,
-            message: "注册成功",
-            type: "success"
-          });
+          apiRegister({
+            username: this.form.name,
+            phone: this.form.phone,
+            email: this.form.email,
+            avatar: this.form.imgUpdata,
+            password: this.form.password,
+            rcode: this.form.yzm
+          })
+            .then(res => {
+              window.console.log(res);
+              if (res.data.code == 200) {
+                this.$message.success("注册成功");
+                this.cancle();
+              } else if (res.data.message == "用户名已存在") {
+                this.$message.error(res.data.message);
+              } else if (res.data.message == "邮箱已存在") {
+                this.$message.error(res.data.message);
+              }
+            })
+            .catch(err => {
+              window.console.log(err);
+            });
         } else {
           this.$message.error("注册失败");
         }
@@ -129,19 +157,66 @@ export default {
 
     handleAvatarSuccess(res, file) {
       this.imageUrl = URL.createObjectURL(file.raw);
+      this.form.imgUpdata = res.data.file_path;
+      window.console.log(this.form.imgUpdata);
+      this.$refs.registerForm.validateField("imgUpdata");
     },
 
     beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
+      const isType = file.type === "image/jpeg" || "image/png" || "image/gif";
       const isLt2M = file.size / 1024 / 1024 < 2;
 
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
+      if (!isType) {
+        this.$message.error("不支持当前上传头像图片格式!");
       }
       if (!isLt2M) {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
-      return isJPG && isLt2M;
+      return isType && isLt2M;
+    },
+
+    newUrl() {
+      this.imgCodeUrl =
+        process.env.VUE_APP_URL + "/captcha?type=sendsms&t" + Date.now();
+    },
+
+    getCode() {
+      //手机号正则表达式
+      var phoneReg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
+      //判断手机号是否符合这个正则
+      if (!phoneReg.test(this.form.phone)) {
+        this.$message.error("手机号格式不正确");
+        //return就不执行后续代码
+        return;
+      } else if (this.form.imgCode.trim().length !== 4) {
+        this.$message.error("图形码为4位数");
+        return;
+      }
+
+      this.time = 60;
+      this.timer = setInterval(() => {
+        if (this.time > 0) {
+          this.time--;
+        } else if (this.time === 0) {
+          clearInterval(this.timer);
+        }
+      }, 1000);
+
+      //获取手机验证码
+      apiGetCode(this.form.imgCode, this.form.phone)
+        .then(res => {
+          window.console.log(res);
+          if (res.data.message == "ok") {
+            this.$message.success("手机验证码为：" + res.data.data.captcha);
+          } else if (res.data.message == "验证码错误") {
+            this.$message.error("图形验证码错误");
+          } else if (res.data.message == "已经注册过该手机号") {
+            this.$message.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          window.console.log(err);
+        });
     }
   }
 };

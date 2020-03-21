@@ -6,6 +6,9 @@ Vue.use(VueRouter);
 
 var router = new VueRouter({
     routes: [{
+        path: '/',
+        redirect: '/login'
+    }, {
         path: '/login',
         component: Login
     }, ]

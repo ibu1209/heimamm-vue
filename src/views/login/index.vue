@@ -10,8 +10,8 @@
       </div>
       <!--表单区域-->
       <el-form class="loginFrom" :rules="rules" ref="loginForm" :model="form" label-width="0">
-        <el-form-item prop="name">
-          <el-input placeholder="请输入手机号" prefix-icon="el-icon-user" v-model="form.name"></el-input>
+        <el-form-item prop="phone">
+          <el-input placeholder="请输入手机号" prefix-icon="el-icon-user" v-model="form.phone"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
@@ -21,13 +21,13 @@
             show-password
           ></el-input>
         </el-form-item>
-        <el-form-item prop="yzm">
+        <el-form-item prop="imgCode">
           <el-row>
             <el-col :span="17">
-              <el-input placeholder="请输验证码" prefix-icon="el-icon-key" v-model="form.yzm"></el-input>
+              <el-input placeholder="请输验证码" prefix-icon="el-icon-key" v-model="form.imgCode"></el-input>
             </el-col>
             <el-col :span="7">
-              <img class="loginCode" src="../../assets/login_banner_ele.png" alt />
+              <img @dblclick="newUrl" class="loginCode" :src="imgCodeUrl" alt />
             </el-col>
           </el-row>
         </el-form-item>
@@ -54,30 +54,29 @@
 <script>
 //导入注册组件
 import register from "../login/components/register";
+import { validatePhone } from "@/utils/mycheck.js";
+import { apiLogin } from "@/api/login.js";
+import { setToken } from "@/utils/mytoken.js";
+
 export default {
   data() {
     return {
+      imgCodeUrl: process.env.VUE_APP_URL + "/captcha?type=login",
       form: {
-        name: "",
+        phone: "",
         password: "",
-        yzm: "",
-        check: []
+        imgCode: "",
+        check: true
       },
       rules: {
-        name: [
-          {
-            type: "number",
-            required: true,
-            message: "请输入手机号",
-            trigger: "blur"
-          },
-          { min: 11, max: 11, message: "长度应为11位数字", trigger: "blur" }
+        phone: [
+          { required: true, message: "手机号不能为空", trigger: "blur" },
+          { validator: validatePhone, trigger: "blur" }
         ],
         password: [
-          { required: true, message: "请输入密码", trigger: "blur" },
-          { min: 6, max: 14, message: "密码不低于6位数字", trigger: "blur" }
+          { required: true, message: "密码不能为空", trigger: "blur" }
         ],
-        yzm: [
+        imgCode: [
           { required: true, message: "请输入验证码", trigger: "blur" },
           { min: 4, max: 4, message: "请输入正确验证码", trigger: "blur" }
         ],
@@ -97,15 +96,27 @@ export default {
     submitForm() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.$message({
-            showClose: true,
-            message: "登录成功",
-            type: "success"
-          });
+          apiLogin({
+            phone: this.form.phone,
+            password: this.form.password,
+            code: this.form.imgCode
+          })
+            .then(res => {
+              setToken(res.data.data.token);
+              this.$message.success("登录成功");
+              this.$router.push("/index");
+            })
+            .catch(err => {
+              window.console.log(err);
+            });
         } else {
           this.$message.error("登录失败");
         }
       });
+    },
+
+    newUrl() {
+      this.imgCodeUrl = process.env.VUE_APP_URL + "/captcha?type=login";
     },
     //点击注册按钮
     openRegister() {
