@@ -9,10 +9,13 @@ import 'element-ui/lib/theme-chalk/index.css';
 Vue.use(Element);
 //导入全局样式
 import './style/index.css'
+//引入store
+import store from './store'
 
 Vue.config.productionTip = false
 
 new Vue({
+    store,
     router,
     render: h => h(App),
 }).$mount('#app')

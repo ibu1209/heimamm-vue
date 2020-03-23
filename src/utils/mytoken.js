@@ -8,7 +8,7 @@ export function setToken(value) {
 
 //获取token
 export function getToken() {
-    window.localStorage.getItem(TOKEN_KEY)
+    return window.localStorage.getItem(TOKEN_KEY)
 }
 
 //删除token

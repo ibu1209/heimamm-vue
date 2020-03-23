@@ -61,10 +61,11 @@ import { setToken } from "@/utils/mytoken.js";
 export default {
   data() {
     return {
-      imgCodeUrl: process.env.VUE_APP_URL + "/captcha?type=login",
+      imgCodeUrl:
+        process.env.VUE_APP_URL + "/captcha?type=login&t" + Date.now(),
       form: {
-        phone: "",
-        password: "",
+        phone: "18895669380",
+        password: "1314",
         imgCode: "",
         check: true
       },
@@ -82,7 +83,6 @@ export default {
         ],
         check: [
           {
-            type: "array",
             required: true,
             message: "请先阅读用户相关条款",
             trigger: "change"
@@ -116,7 +116,8 @@ export default {
     },
 
     newUrl() {
-      this.imgCodeUrl = process.env.VUE_APP_URL + "/captcha?type=login";
+      this.imgCodeUrl =
+        process.env.VUE_APP_URL + "/captcha?type=login&t" + Date.now();
     },
     //点击注册按钮
     openRegister() {
