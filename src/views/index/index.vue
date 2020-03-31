@@ -16,26 +16,20 @@
       <el-aside width="auto">
         <!--侧边栏-->
         <el-menu :router="true" class="el-menu-vertical-demo" :collapse="isCollapse">
-          <el-menu-item index="chart">
+          <template v-for="(item, index) in child">
+            <el-menu-item
+              :key="index"
+              v-if="item.meta.roles.includes($store.state.role)"
+              :index="item.meta.fullpath"
+            >
+              <i class="el-icon-pie-chart"></i>
+              <span slot="title">{{item.meta.title}}</span>
+            </el-menu-item>
+          </template>
+          <!-- <el-menu-item v-if="['管理员','老师'].includes($store.state.role)" index="chart">
             <i class="el-icon-pie-chart"></i>
             <span slot="title">数据概览</span>
-          </el-menu-item>
-          <el-menu-item index="user">
-            <i class="el-icon-user"></i>
-            <span slot="title">用户列表</span>
-          </el-menu-item>
-          <el-menu-item index="question">
-            <i class="el-icon-edit-outline"></i>
-            <span slot="title">题库列表</span>
-          </el-menu-item>
-          <el-menu-item index="enterprise">
-            <i class="el-icon-office-building"></i>
-            <span slot="title">企业列表</span>
-          </el-menu-item>
-          <el-menu-item index="subject">
-            <i class="el-icon-notebook-2"></i>
-            <span slot="title">学科列表</span>
-          </el-menu-item>
+          </el-menu-item>-->
         </el-menu>
       </el-aside>
       <el-main>
@@ -46,6 +40,7 @@
 </template>
 
 <script>
+import child from "../../router/childRouter";
 import { apiLogout } from "@/api/index.js";
 import { removeToken } from "../../utils/mytoken";
 
@@ -54,7 +49,9 @@ export default {
     return {
       userImg: "",
       userInfo: "",
-      isCollapse: false
+      isCollapse: false,
+      //生成导航的数据源
+      child: child
     };
   },
   methods: {

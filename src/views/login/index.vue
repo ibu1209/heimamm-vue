@@ -57,6 +57,7 @@ import register from "../login/components/register";
 import { validatePhone } from "@/utils/mycheck.js";
 import { apiLogin } from "@/api/login.js";
 import { setToken } from "@/utils/mytoken.js";
+import { apiInfo } from "../../api/index";
 
 export default {
   data() {
@@ -102,15 +103,27 @@ export default {
             code: this.form.imgCode
           })
             .then(res => {
-              setToken(res.data.data.token);
-              this.$message.success("登录成功");
-              this.$router.push("/index");
+              window.console.log(res);
+              if (res.data.code == 200) {
+                setToken(res.data.data.token);
+                apiInfo().then(res => {
+                  window.console.log(res);
+                  if (res.data.code == 200 && res.data.data.status == 1) {
+                    this.$message.success("登录成功");
+                    this.$router.push("/index");
+                  } else {
+                    this.$message.error("帐号已禁用");
+                  }
+                });
+              } else {
+                this.$message.error("验证错误");
+              }
             })
             .catch(err => {
               window.console.log(err);
             });
         } else {
-          this.$message.error("登录失败");
+          this.$message.error("验证失败");
         }
       });
     },
@@ -130,7 +143,7 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style scoped lang="less">
 .login {
   height: 100%;
   background: linear-gradient(

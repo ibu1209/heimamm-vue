@@ -9,7 +9,8 @@ const store = new Vuex.Store({
     //在vue调用this.$store.state.参数名
     state: {
         username: '',
-        userImg: ''
+        userImg: '',
+        role: ''
     },
     //用来修改state的方法
     mutations: {
@@ -18,6 +19,10 @@ const store = new Vuex.Store({
         setUserInfo: function(state, payload) {
             state.username = payload.username;
             state.userImg = payload.userImg;
+        },
+        //定义一个设置用户角色的方法
+        setRole: function(state, payload) {
+            state.role = payload
         }
     }
 })
